@@ -37,6 +37,7 @@ class ANN_Sigmoid_Activation(ANN_Activation):
         return 1/(1 + np.exp(-input_vector)) 
 
     def derivative(self, input_vector): 
+        print("input: " + str(input_vector))
         return np.exp(-input_vector) / ((1 + np.exp(-input_vector))**2)
 
     def __str__(self):
@@ -56,6 +57,7 @@ class ANN_Hidden_Layer:
         self.activation       = activation
         self.Wh               = np.random.rand(num_input_nodes, num_hidden_nodes) # Hidden Weight Matrix
         self.bh               = np.random.rand(num_hidden_nodes)                  # Biases vector
+        self.zh               = [] # Hold the summation of the input and bias with the weights
         self.h                = [] # Hold the output vector of this hidden layer
 
     def get_weight_matrix(self):
@@ -72,8 +74,28 @@ class ANN_Hidden_Layer:
 
     def forward_propagation(self, x):
         """Calculate the output vector y of the neural network based on the x and hidden layers."""
-        self.h = self.activation.forward( np.dot(x, self.Wh) + self.bh )
+        self.zh = np.dot(x, self.Wh) + self.bh
+        print("zh: " + str(self.zh))
+        self.h  = self.activation.forward( self.zh )
         return self.h
+
+    def back_propagation(self, prev_delta, prev_W):
+        """Part of the back propagation calculation of the ANN network"""
+        print("Hidden Layer Back Prop")   
+        # delta = dJ_dy * dy_dzy => zy output previous layer
+
+        print("prev_delta: " + str(prev_delta))
+        print("prev_W: " + str(prev_W))
+
+        delta2 = np.dot( prev_delta, prev_W.transpose() ) * self.activation.derivative( self.zh )
+        print("delta2: " + str(delta2))
+
+        dz1_dWh = self.h
+        print("dz1_dWh: " + str(dz1_dWh))
+        dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
+        print("dJ_dWh  : " + str(dJ_dWh))
+
+        return { 'delta': delta2, 'W': self.Wh, 'dJ_dWh': dJ_dWh }
 
     def __str__(self):
         info = "(inputs: " + str(self.num_input_nodes) + ", nodes: " + str(self.num_hidden_nodes) + ", activation: " + str(self.activation) + ")\n"
@@ -98,6 +120,7 @@ class ANN:
         self.Wy                = np.random.rand(num_input_nodes, num_output_nodes) # Hold output layer weight matrix
         self.by                = np.random.rand(num_output_nodes) # Biases vector of the output nodes
         self.x                 = [] # Hold the input vector
+        self.zy                = [] # Hold the summation of the input and bias with the weights
         self.y                 = [] # hold the output vector
 
     def get_weight_matrix(self):
@@ -119,24 +142,62 @@ class ANN:
     def forward_propagation(self, x):
         """Calculate the output vector y of the neural network based on the x and hidden layers."""
         self.x = x
-        print("Input layer vector: " + str(x))
-        total_hidden_layers = len(self.hidden_layers)
+        print("Forward propagation\nInput layer vector: " + str(x))
 
-        if (total_hidden_layers == 0):
-            self.y = self.output_activation.forward( np.dot( self.x, self.Wy ) + self.by )
+        if ( len(self.hidden_layers) == 0):
+            self.zy = np.dot( self.x, self.Wy ) + self.by
+            self.y = self.output_activation.forward( self.zy )
 
         else: # Loop over the hidden layers
             input_vector = self.x
-            for i in range( len(self.hidden_layers) ):
-                output_vector = self.hidden_layers[i].forward_propagation(input_vector)
+            for hidden_layer in self.hidden_layers:
+                output_vector = hidden_layer.forward_propagation(input_vector)
                 print("Hidden layer output vector: " + str(output_vector))
                 input_vector = output_vector
 
-            self.y = self.output_activation.forward( np.dot( input_vector, self.Wy ) + self.by )
+            self.zy = np.dot( input_vector, self.Wy ) + self.by
+            self.y  = self.output_activation.forward( self.zy )
             print("Output layer vector: " + str(self.y))
 
         return self.y
         
+    def back_propagation(self, input_example, output_desired):
+        """Perform calculation the network backwards"""
+
+        self.forward_propagation(input_example)  # Perform first the forward propagation calculation
+
+        J = 0.5 * ( self.y - output_desired )**2 # Calculate the cost
+        print("Backward propagation\nJ = " + str(J))
+
+        dJ_dy = ( self.y - output_desired )
+        print("dJ_dy   : " + str(dJ_dy))
+        dy_dzy   = self.output_activation.derivative( self.zy )
+        print("dy_dzy  : " + str(dy_dzy))
+        delta = np.multiply( dJ_dy, dy_dzy ) # required to back propagate through the network (part of the derivation that propagates back into the network)
+        print("delta: " + str(delta))
+        weights = self.Wy
+
+        if ( len(self.hidden_layers) == 0):
+            dzy_dWy = self.x # TODO
+            print("dzy_dWy : " + str(dzy_dWy))
+
+        else: # Loop over the hidden layers from back to start
+            dzy_dWy = self.hidden_layers[ len(self.hidden_layers)-1 ].h
+            dJ_dWy = np.dot( dzy_dWy.transpose(), delta )
+            print("dJ_dWy  : " + str(dJ_dWy))
+
+            dJ_dWh = []
+            for hidden_layer in reversed(self.hidden_layers):
+                result  = hidden_layer.back_propagation(delta, weights)
+                delta   = result['delta']
+                weights = result['W']
+                dJ_dWh.append( result['dJ_dWh'])
+
+            # No the input with Wh1
+            
+
+            dJ_dWh = reversed(dJ_dWh) # hidden layer 1 to n
+
     def __str__(self):
         info = "ANN(inputs: " + str(self.num_input_nodes) + ", outputs: " + str(self.num_output_nodes) + ", hidden layers: " + str(len(self.hidden_layers)) + ")\n"
         for i in range( len(self.hidden_layers) ):
