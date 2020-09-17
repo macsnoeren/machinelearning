@@ -143,6 +143,17 @@ class ANN:
         self.hidden_layers.append(hidden_layer)
         self.Wy = np.random.rand(hidden_layer.num_hidden_nodes, self.num_output_nodes)
 
+    def get_total_hidden_layers(self):
+        return len(self.hidden_layers)
+
+    def get_hidden_layer(self, i):
+        if ( i < len(self.hidden_layers)):
+            return self.hidden_layers[i]
+
+        else:
+            print("get_hidden_layer: error no layer found!")
+            return -1
+
     def forward_propagation(self, x):
         """Calculate the output vector y of the neural network based on the x and hidden layers."""
         self.x = x
@@ -180,6 +191,7 @@ class ANN:
         delta = np.multiply( dJ_dy, dy_dzy ) # required to back propagate through the network (part of the derivation that propagates back into the network)
         print("delta: " + str(delta))
         weights = self.Wy
+        dJ_dWh = [] # Hold the weight gradients of the hidden layers
 
         if ( len(self.hidden_layers) == 0):
             dJ_dWy = np.dot( self.x.transpose(), delta )
