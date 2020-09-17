@@ -1,5 +1,6 @@
 import numpy as np
-from ann import ANN, ANN_Sigmoid_Activation, ANN_Hidden_Layer
+from ann import ANN, ANN_Hidden_Layer
+from ann_af import ANN_Sigmoid_Activation
 
 sa  = ANN_Sigmoid_Activation()
 ann = ANN(4, 2, sa)
