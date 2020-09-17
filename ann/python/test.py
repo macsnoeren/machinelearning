@@ -19,4 +19,8 @@ x = np.array([[0.1, 0.1, 0.1, 0.1]])
 
 print( ann.forward_propagation(x) )
 
-ann.back_propagation([[1, 1, 1, 1]], [[1, 0]])
+x = np.array([[1, 1, 1, 1]])
+y = np.array([[1, 0]])
+result = ann.back_propagation(x, y)
+
+print("results\n\n-------\n\n" + str(result))

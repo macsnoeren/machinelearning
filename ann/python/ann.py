@@ -55,6 +55,7 @@ class ANN_Hidden_Layer:
         self.num_input_nodes  = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
         self.activation       = activation
+        self.x                = [] # Input vector of this hidden layer
         self.Wh               = np.random.rand(num_input_nodes, num_hidden_nodes) # Hidden Weight Matrix
         self.bh               = np.random.rand(num_hidden_nodes)                  # Biases vector
         self.zh               = [] # Hold the summation of the input and bias with the weights
@@ -74,6 +75,8 @@ class ANN_Hidden_Layer:
 
     def forward_propagation(self, x):
         """Calculate the output vector y of the neural network based on the x and hidden layers."""
+        self.x = x
+        print("input vector (x): " + str(self.x))
         self.zh = np.dot(x, self.Wh) + self.bh
         print("zh: " + str(self.zh))
         self.h  = self.activation.forward( self.zh )
@@ -90,7 +93,8 @@ class ANN_Hidden_Layer:
         delta2 = np.dot( prev_delta, prev_W.transpose() ) * self.activation.derivative( self.zh )
         print("delta2: " + str(delta2))
 
-        dz1_dWh = self.h
+        #dz1_dWh = self.h # This is not correct and it should be the activation from the previous layer
+        dz1_dWh = self.x # Activation from the previous layer!
         print("dz1_dWh: " + str(dz1_dWh))
         dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
         print("dJ_dWh  : " + str(dJ_dWh))
@@ -178,11 +182,12 @@ class ANN:
         weights = self.Wy
 
         if ( len(self.hidden_layers) == 0):
-            dzy_dWy = self.x # TODO
-            print("dzy_dWy : " + str(dzy_dWy))
+            dJ_dWy = np.dot( self.x.transpose(), delta )
+            print("dJ_dWy  : " + str(dJ_dWy))
 
         else: # Loop over the hidden layers from back to start
             dzy_dWy = self.hidden_layers[ len(self.hidden_layers)-1 ].h
+            print("dzy_dWy : " + str(dzy_dWy))
             dJ_dWy = np.dot( dzy_dWy.transpose(), delta )
             print("dJ_dWy  : " + str(dJ_dWy))
 
@@ -193,10 +198,7 @@ class ANN:
                 weights = result['W']
                 dJ_dWh.append( result['dJ_dWh'])
 
-            # No the input with Wh1
-            
-
-            dJ_dWh = reversed(dJ_dWh) # hidden layer 1 to n
+        return {'dJ_dWh': list(reversed(dJ_dWh)), 'dJ_dWy': dJ_dWy }
 
     def __str__(self):
         info = "ANN(inputs: " + str(self.num_input_nodes) + ", outputs: " + str(self.num_output_nodes) + ", hidden layers: " + str(len(self.hidden_layers)) + ")\n"
