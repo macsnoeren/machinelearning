@@ -4,70 +4,6 @@ import matplotlib as plt
 # Author: Maurice Snoeren - Avans Hogeschool - mac.snoeren@avans.nl
 # 09-2020 - Beta version
 
-class ANN_Hidden_Layer:
-    """ Artificial Neural Network Hidden Layer class.
-    """
-
-    def __init__(self, num_input_nodes, num_hidden_nodes, activation):
-        """Constructor for the ANN. 
-            num_input_nodes (int): Number of inputs
-            num_output_nodes (int): Number of outputs
-        """
-        self.num_input_nodes  = num_input_nodes
-        self.num_hidden_nodes = num_hidden_nodes
-        self.activation       = activation
-        self.x                = [] # Input vector of this hidden layer
-        self.Wh               = np.random.rand(num_input_nodes, num_hidden_nodes) # Hidden Weight Matrix
-        self.bh               = np.random.rand(num_hidden_nodes)                  # Biases vector
-        self.zh               = [] # Hold the summation of the input and bias with the weights
-        self.h                = [] # Hold the output vector of this hidden layer
-
-    def get_weight_matrix(self):
-        return self.Wh
-
-    def set_weight_matrix(self, Wh):
-        self.Wh = Wh
-
-    def get_biases_vector(self):
-        return self.bh
-
-    def set_biases_vector(self, bh):
-        self.bh = bh
-
-    def forward_propagation(self, x):
-        """Calculate the output vector y of the neural network based on the x and hidden layers."""
-        self.x = x
-        print("input vector (x): " + str(self.x))
-        self.zh = np.dot(x, self.Wh) + self.bh
-        print("zh: " + str(self.zh))
-        self.h  = self.activation.forward( self.zh )
-        return self.h
-
-    def back_propagation(self, prev_delta, prev_W):
-        """Part of the back propagation calculation of the ANN network"""
-        print("Hidden Layer Back Prop")   
-        # delta = dJ_dy * dy_dzy => zy output previous layer
-
-        print("prev_delta: " + str(prev_delta))
-        print("prev_W: " + str(prev_W))
-
-        delta2 = np.dot( prev_delta, prev_W.transpose() ) * self.activation.derivative( self.zh )
-        print("delta2: " + str(delta2))
-
-        #dz1_dWh = self.h # This is not correct and it should be the activation from the previous layer
-        dz1_dWh = self.x # Activation from the previous layer!
-        print("dz1_dWh: " + str(dz1_dWh))
-        dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
-        print("dJ_dWh  : " + str(dJ_dWh))
-
-        return { 'delta': delta2, 'W': self.Wh, 'dJ_dWh': dJ_dWh }
-
-    def __str__(self):
-        info = "(inputs: " + str(self.num_input_nodes) + ", nodes: " + str(self.num_hidden_nodes) + ", activation: " + str(self.activation) + ")\n"
-        info += "  Weight Matrix: \n" + str(self.Wh) + "\n"
-        info += "  Biases Vector: \n" + str(self.bh) + "\n"
-        return info
-
 class ANN:
     """ Artificial Neural Network class.
         This class implements a ANN with hidden layers to understand how a network is working under the hood.
@@ -180,4 +116,68 @@ class ANN:
         info += "Weight Matrix: \n" + str(self.Wy) + "\n"
         info += "Biases Vector: \n" + str(self.by) + "\n"
         info += "Output activation function: " + str(self.output_activation)
+        return info
+
+class ANN_Hidden_Layer:
+    """ Artificial Neural Network Hidden Layer class.
+    """
+
+    def __init__(self, num_input_nodes, num_hidden_nodes, activation):
+        """Constructor for the ANN. 
+            num_input_nodes (int): Number of inputs
+            num_output_nodes (int): Number of outputs
+        """
+        self.num_input_nodes  = num_input_nodes
+        self.num_hidden_nodes = num_hidden_nodes
+        self.activation       = activation
+        self.x                = [] # Input vector of this hidden layer
+        self.Wh               = np.random.rand(num_input_nodes, num_hidden_nodes) # Hidden Weight Matrix
+        self.bh               = np.random.rand(num_hidden_nodes)                  # Biases vector
+        self.zh               = [] # Hold the summation of the input and bias with the weights
+        self.h                = [] # Hold the output vector of this hidden layer
+
+    def get_weight_matrix(self):
+        return self.Wh
+
+    def set_weight_matrix(self, Wh):
+        self.Wh = Wh
+
+    def get_biases_vector(self):
+        return self.bh
+
+    def set_biases_vector(self, bh):
+        self.bh = bh
+
+    def forward_propagation(self, x):
+        """Calculate the output vector y of the neural network based on the x and hidden layers."""
+        self.x = x
+        print("input vector (x): " + str(self.x))
+        self.zh = np.dot(x, self.Wh) + self.bh
+        print("zh: " + str(self.zh))
+        self.h  = self.activation.forward( self.zh )
+        return self.h
+
+    def back_propagation(self, prev_delta, prev_W):
+        """Part of the back propagation calculation of the ANN network"""
+        print("Hidden Layer Back Prop")   
+        # delta = dJ_dy * dy_dzy => zy output previous layer
+
+        print("prev_delta: " + str(prev_delta))
+        print("prev_W: " + str(prev_W))
+
+        delta2 = np.dot( prev_delta, prev_W.transpose() ) * self.activation.derivative( self.zh )
+        print("delta2: " + str(delta2))
+
+        #dz1_dWh = self.h # This is not correct and it should be the activation from the previous layer
+        dz1_dWh = self.x # Activation from the previous layer!
+        print("dz1_dWh: " + str(dz1_dWh))
+        dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
+        print("dJ_dWh  : " + str(dJ_dWh))
+
+        return { 'delta': delta2, 'W': self.Wh, 'dJ_dWh': dJ_dWh }
+
+    def __str__(self):
+        info = "(inputs: " + str(self.num_input_nodes) + ", nodes: " + str(self.num_hidden_nodes) + ", activation: " + str(self.activation) + ")\n"
+        info += "  Weight Matrix: \n" + str(self.Wh) + "\n"
+        info += "  Biases Vector: \n" + str(self.bh) + "\n"
         return info
