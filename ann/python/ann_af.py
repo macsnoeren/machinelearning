@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib as plt
 from random import random
 
 # Author: Maurice Snoeren - Avans Hogeschool - mac.snoeren@avans.nl

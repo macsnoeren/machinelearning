@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib as plt
 
 # Author: Maurice Snoeren - Avans Hogeschool - mac.snoeren@avans.nl
 # 09-2020 - Beta version
