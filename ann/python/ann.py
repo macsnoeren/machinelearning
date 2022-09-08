@@ -19,9 +19,9 @@ class ANN:
         self.hidden_layers     = [] # Holds the hidden_layer classes
         self.Wy                = np.random.rand(num_input_nodes, num_output_nodes) # Hold output layer weight matrix
         self.by                = np.random.rand(num_output_nodes) # Biases vector of the output nodes
-        self.x                 = [] # Hold the input vector
-        self.zy                = [] # Hold the summation of the input and bias with the weights
-        self.y                 = [] # hold the output vector
+        self.x                 = np.empty([1, self.num_input_nodes]) # Hold the input vector
+        self.zy                = np.empty([1, self.num_input_nodes]) # Hold the summation of the input and bias with the weights
+        self.y                 = np.empty([1, self.num_output_nodes]) # hold the output vector
 
     def get_weight_matrix(self):
         return self.Wy
