@@ -41,3 +41,17 @@ class ANN_Sigmoid_Activation(ANN_Activation):
 
     def __str__(self):
         return "Sigmoid activation function"
+
+class ANN_ReLU_Activation:
+    def __init__(self):
+        """Constructor for the ANN_ReLU_Activation."""
+        pass
+
+    def forward(self, input_vector):
+        return np.maximum(0, input_vector)
+    
+    def derivative(self, input_vector):
+        temp = 1*input_vector # copy the data!
+        temp[temp>0]  = 1
+        temp[temp<=0] = 0
+        return temp

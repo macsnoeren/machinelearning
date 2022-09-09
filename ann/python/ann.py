@@ -23,6 +23,10 @@ class ANN:
         self.zy                = np.empty([1, self.num_input_nodes]) # Hold the summation of the input and bias with the weights
         self.y                 = np.empty([1, self.num_output_nodes]) # hold the output vector
 
+        self.y_theta           = np.empty([1, self.num_output_nodes])
+        self.J                 = np.empty([1, self.num_output_nodes])
+        self.dJ_dWy            = np.random.rand(num_input_nodes, num_output_nodes)
+
     def get_weight_matrix(self):
         return self.Wy
 
@@ -77,8 +81,9 @@ class ANN:
 
         self.forward_propagation(input_example)  # Perform first the forward propagation calculation
 
-        J = 0.5 * ( self.y - output_desired )**2 # Calculate the cost
-        print("Backward propagation\nJ = " + str(J))
+        self.y_theta = output_desired
+        self.J = 0.5 * ( self.y - output_desired )**2 # Calculate the cost
+        print("Backward propagation\nJ = " + str(self.J))
 
         dJ_dy = ( self.y - output_desired )
         print("dJ_dy   : " + str(dJ_dy))
@@ -106,6 +111,8 @@ class ANN:
                 weights = result['W']
                 dJ_dWh.append( result['dJ_dWh'])
 
+        self.dJ_dWy = dJ_dWy
+
         return {'dJ_dWh': list(reversed(dJ_dWh)), 'dJ_dWy': dJ_dWy }
 
     def __str__(self):
@@ -129,11 +136,12 @@ class ANN_Hidden_Layer:
         self.num_input_nodes  = num_input_nodes
         self.num_hidden_nodes = num_hidden_nodes
         self.activation       = activation
-        self.x                = [] # Input vector of this hidden layer
+        self.x                = np.empty([1, self.num_input_nodes]) # Input vector of this hidden layer
         self.Wh               = np.random.rand(num_input_nodes, num_hidden_nodes) # Hidden Weight Matrix
         self.bh               = np.random.rand(num_hidden_nodes)                  # Biases vector
-        self.zh               = [] # Hold the summation of the input and bias with the weights
-        self.h                = [] # Hold the output vector of this hidden layer
+        self.zh               = np.empty([1, self.num_hidden_nodes]) # Hold the summation of the input and bias with the weights
+        self.h                = np.empty([1, self.num_hidden_nodes]) # Hold the output vector of this hidden layer
+        self.dJ_dWh           = np.random.rand(num_input_nodes, num_hidden_nodes)
 
     def get_weight_matrix(self):
         return self.Wh
@@ -170,10 +178,10 @@ class ANN_Hidden_Layer:
         #dz1_dWh = self.h # This is not correct and it should be the activation from the previous layer
         dz1_dWh = self.x # Activation from the previous layer!
         print("dz1_dWh: " + str(dz1_dWh))
-        dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
-        print("dJ_dWh  : " + str(dJ_dWh))
+        self.dJ_dWh  = np.dot( dz1_dWh.transpose(), delta2 )
+        print("dJ_dWh  : " + str(self.dJ_dWh))
 
-        return { 'delta': delta2, 'W': self.Wh, 'dJ_dWh': dJ_dWh }
+        return { 'delta': delta2, 'W': self.Wh, 'dJ_dWh': self.dJ_dWh }
 
     def __str__(self):
         info = "(inputs: " + str(self.num_input_nodes) + ", nodes: " + str(self.num_hidden_nodes) + ", activation: " + str(self.activation) + ")\n"
